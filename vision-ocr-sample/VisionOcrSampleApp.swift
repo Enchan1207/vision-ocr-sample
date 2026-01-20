@@ -11,7 +11,7 @@ import SwiftUI
 struct VisionOcrSampleApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            OcrView()
         }
     }
 }
