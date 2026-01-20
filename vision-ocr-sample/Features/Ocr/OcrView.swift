@@ -14,7 +14,12 @@ struct OcrView: View {
     var body: some View {
         VStack {
             if let image = viewModel.image {
-                Image(nsImage: image).resizable().scaledToFit()
+                VStack(spacing: 8) {
+                    Image(nsImage: image).resizable().scaledToFit()
+                    Button("Run OCR"){
+                        viewModel.didClickRecognize()
+                    }
+                }
             } else {
                 VStack(spacing: 8) {
                     Image(systemName: "photo")
