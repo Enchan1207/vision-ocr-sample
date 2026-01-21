@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct VisionOcrSampleApp: App {
-    var body: some Scene {
-        WindowGroup {
-            OcrView()
-        }
+  let ocrEngine = VisionOcrEngine()
+
+  var body: some Scene {
+    WindowGroup {
+      OcrView(engine: ocrEngine)
     }
+  }
 }

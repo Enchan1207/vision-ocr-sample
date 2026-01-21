@@ -8,27 +8,49 @@
 import AppKit
 
 final class OcrViewModel: ObservableObject {
-    @Published var image: NSImage?
-    
-    let usecase: OcrUsecase
-    
-    init(usecase: OcrUsecase = .init()) {
-        self.usecase = usecase
+  @Published var state: OcrState
+
+  let engine: OcrEngine
+
+  init(engine: OcrEngine) {
+    self.engine = engine
+    self.state = .empty
+  }
+
+  func didDropFile(url: URL) {
+    guard let image = NSImage(contentsOf: url) else {
+      self.state = .error(.invalidUrl(url))
+      return
     }
-    
-    func didDropFile(url: URL){
-        guard let image = NSImage(contentsOf: url) else {return}
-        
-        DispatchQueue.main.async {
-            self.image = image
+
+    DispatchQueue.main.async {
+      self.state = .imageLoaded(image)
+    }
+  }
+
+  func didClickRecognize() {
+    guard case .imageLoaded(let image) = state else { return }
+
+    // FIXME: これ発生しうるだろうか?
+    guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+      self.state = .error(.failedToConvertImage)
+      return
+    }
+
+    self.state = .textRecognizing(image)
+
+    Task {
+      do {
+        let result = try await self.engine.recognizeText(from: cgImage)
+
+        await MainActor.run {
+          self.state = .textRecognized(image, result)
         }
-    }
-    
-    func didClickRecognize(){
-        guard let image else { return }
-        
-        Task {
-            await self.usecase.recognize(image)
+      } catch {
+        await MainActor.run {
+          self.state = .error(.recognitionFailed(error))
         }
+      }
     }
+  }
 }
