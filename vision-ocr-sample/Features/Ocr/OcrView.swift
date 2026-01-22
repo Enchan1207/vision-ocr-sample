@@ -9,18 +9,16 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct OcrView: View {
-  @StateObject private var viewModel = OcrViewModel()
+  @StateObject private var viewModel: OcrViewModel
+
+  init(engine: OcrEngine) {
+    _viewModel = StateObject(wrappedValue: .init(engine: engine))
+  }
 
   var body: some View {
     VStack {
-      if let image = viewModel.image {
-        VStack(spacing: 8) {
-          Image(nsImage: image).resizable().scaledToFit()
-          Button("Run OCR") {
-            viewModel.didClickRecognize()
-          }
-        }
-      } else {
+      switch viewModel.state {
+      case .empty:
         VStack(spacing: 8) {
           Image(systemName: "photo")
             .font(.largeTitle)
@@ -29,6 +27,31 @@ struct OcrView: View {
             .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+      case .imageLoaded(let image):
+        VStack(spacing: 8) {
+          Image(nsImage: image).resizable().scaledToFit()
+          Button("Run OCR") {
+            viewModel.didClickRecognize()
+          }
+        }
+
+      case .textRecognizing(let image):
+        VStack(spacing: 8) {
+          Image(nsImage: image).resizable().scaledToFit()
+          Button("Run OCR") {}.disabled(true)
+        }
+
+      case .textRecognized(let image, let results):
+        VStack(spacing: 8) {
+          Image(nsImage: image).resizable().scaledToFit()
+          Button("Run OCR") {
+            viewModel.didClickRecognize()
+          }
+        }
+
+      case .error:
+        Text("An error occurred").foregroundColor(.secondary)
       }
     }.onDrop(of: [.fileURL], isTargeted: nil) { providers in
       guard let provider = providers.first else { return false }
