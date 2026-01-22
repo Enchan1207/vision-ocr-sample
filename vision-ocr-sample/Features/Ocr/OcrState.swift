@@ -5,12 +5,12 @@
 //  Created by enchantcode on 2026/01/21.
 //
 
-import AppKit
+import CoreGraphics
 
 enum OcrState {
-  case empty
-  case imageLoaded(NSImage)
-  case textRecognizing(NSImage)
-  case textRecognized(NSImage, [OcrResult])
-  case error(OcrError)
+    case empty
+    case imageLoaded(CGImage)
+    case textRecognizing(CGImage)
+    case textRecognized(CGImage, [OcrResult])
+    case error(OcrError)
 }

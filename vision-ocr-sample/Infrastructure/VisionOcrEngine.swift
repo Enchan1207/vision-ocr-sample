@@ -24,25 +24,11 @@ final class VisionOcrEngine: OcrEngine {
           return
         }
 
-        let width = CGFloat(image.width)
-        let height = CGFloat(image.height)
-
         let results: [OcrResult] = observations.compactMap { observation in
           guard let candidate = observation.topCandidates(1).first else { return nil }
-
-          // Vision boundingBox is normalized (0..1) with origin at bottom-left.
-          // Convert to image pixel coordinates with origin at top-left.
-          let bbox = observation.boundingBox
-          let rect = CGRect(
-            x: bbox.minX * width,
-            y: (1 - bbox.maxY) * height,
-            width: bbox.width * width,
-            height: bbox.height * height
-          )
-
-          return OcrResult(text: candidate.string, boundingBox: rect)
+            return .init(text: candidate.string, boundingBox: observation.boundingBox)
         }
-
+          
         continuation.resume(returning: results)
       }
 

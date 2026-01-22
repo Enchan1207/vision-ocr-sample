@@ -8,7 +8,7 @@
 import CoreGraphics
 import Foundation
 
-struct OcrResult {
+struct OcrResult: Hashable {
   let text: String
   let boundingBox: CGRect
 }
